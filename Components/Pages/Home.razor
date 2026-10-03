@@ -1,7 +1,102 @@
 ﻿@page "/"
+@using Peapoll.Models
+@using Peapoll.Services
+@inject PollService PollService
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Peapoll - Anonymous Voting</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container max-w-2xl py-4">
+    <div class="mb-4 text-center">
+        <h1 class="fw-bold">Public Polls</h1>
+        <p class="text-muted">Vote anonymously on active poll questions below.</p>
+    </div>
 
-Welcome to your new app.
+    @if (polls == null || !polls.Any())
+    {
+        <div class="card p-4 text-center text-muted">
+            No active polls found. Be the first to create one!
+        </div>
+    }
+    else
+    {
+        @foreach (var poll in polls)
+        {
+            var votedOptionId = votedPolls.GetValueOrDefault(poll.Id);
+            var hasVoted = votedOptionId != null;
+
+            <div class="card p-4 mb-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-light text-dark border">
+                        Created by @poll.CreatedBy
+                    </span>
+                    <span class="badge @(poll.IsExpired ? "bg-danger" : "bg-success")">
+                        @(poll.IsExpired ? "Expired" : poll.ExpiresAt.HasValue ? $"Ends {poll.ExpiresAt.Value.ToLocalTime():g}" : "No Expiration")
+                    </span>
+                </div>
+
+                <h3 class="h5 fw-bold mb-3">@poll.Question</h3>
+
+                @if (!hasVoted && !poll.IsExpired)
+                {
+                    <div class="d-flex flex-column gap-2 mb-3">
+                        @foreach (var option in poll.Options)
+                        {
+                            <button class="btn btn-outline-secondary text-start p-3 d-flex justify-content-between align-items-center"
+                                    @onclick="() => CastVote(poll.Id, option.Id)">
+                                <span>@option.Text</span>
+                                <span class="text-muted small">Vote</span>
+                            </button>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-2 mb-3">
+                        @foreach (var option in poll.Options)
+                        {
+                            var percentage = poll.TotalVotes > 0 ? (option.Votes * 100 / poll.TotalVotes) : 0;
+                            var isSelected = votedOptionId == option.Id;
+
+                            <div class="p-3 border rounded @(isSelected ? "border-success bg-light" : "")">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="fw-semibold">
+                                        @option.Text @(isSelected ? "✓ (Your Vote)" : "")
+                                    </span>
+                                    <span>@percentage% (@option.Votes)</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: @percentage%"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <div class="d-flex justify-content-between text-muted small pt-2 border-top">
+                    <span>Total votes: @poll.TotalVotes</span>
+                    <span>@poll.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")</span>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<Poll> polls = new();
+    private Dictionary<Guid, Guid?> votedPolls = new();
+
+    protected override void OnInitialized()
+    {
+        polls = PollService.GetAllPolls();
+    }
+
+    private void CastVote(Guid pollId, Guid optionId)
+    {
+        if (PollService.Vote(pollId, optionId))
+        {
+            votedPolls[pollId] = optionId;
+            polls = PollService.GetAllPolls();
+        }
+    }
+}

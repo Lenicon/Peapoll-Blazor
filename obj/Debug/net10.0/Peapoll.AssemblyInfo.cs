@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Peapoll")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ed1cb35c32181fe983ed6fe642bf6351f8805c2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bebd7baeb437bf97b8a183a5be477ce4b221e393")]
 [assembly: System.Reflection.AssemblyProductAttribute("Peapoll")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Peapoll")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

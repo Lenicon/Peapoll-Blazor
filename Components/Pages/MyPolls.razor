@@ -1,0 +1,62 @@
+@page "/my-polls"
+@using Peapoll.Models
+@using Peapoll.Services
+@inject PollService PollService
+@rendermode InteractiveServer
+
+<PageTitle>My Polls - Peapoll</PageTitle>
+
+<div class="container max-w-2xl py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold mb-0">My Created Polls</h1>
+        <a href="create-poll" class="btn btn-primary">+ New Poll</a>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Author Filter:</label>
+        <input class="form-control" @bind="currentUser" @bind:after="LoadPolls" placeholder="Enter username..." />
+    </div>
+
+    @if (!userPolls.Any())
+    {
+        <div class="card p-4 text-center text-muted">
+            No polls found for "<strong>@currentUser</strong>".
+        </div>
+    }
+    else
+    {
+        @foreach (var poll in userPolls)
+        {
+            <div class="card p-3 mb-3 shadow-sm">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="h6 fw-bold mb-1">@poll.Question</h3>
+                        <span class="text-muted small">Created @poll.CreatedAt.ToLocalTime().ToString("g")</span>
+                    </div>
+                    <span class="badge @(poll.IsExpired ? "bg-secondary" : "bg-success")">
+                        @(poll.IsExpired ? "Expired" : "Active")
+                    </span>
+                </div>
+                <div class="mt-2 pt-2 border-top d-flex justify-content-between text-muted small">
+                    <span>Total Votes: <strong>@poll.TotalVotes</strong></span>
+                    <span>Options: <strong>@poll.Options.Count</strong></span>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private string currentUser = "Hertz";
+    private List<Poll> userPolls = new();
+
+    protected override void OnInitialized()
+    {
+        LoadPolls();
+    }
+
+    private void LoadPolls()
+    {
+        userPolls = PollService.GetPollsByUser(currentUser);
+    }
+}

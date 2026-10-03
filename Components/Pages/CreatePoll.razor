@@ -1,0 +1,75 @@
+@page "/create-poll"
+@using Peapoll.Services
+@inject PollService PollService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Create Poll - Peapoll</PageTitle>
+
+<div class="container max-w-xl py-4">
+    <h1 class="fw-bold mb-4">Create a New Poll</h1>
+
+    <div class="card p-4 shadow-sm">
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Poll Question</label>
+            <input class="form-control" placeholder="e.g. Favorite Web Framework?" @bind="question" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Options</label>
+            @for (int i = 0; i < options.Count; i++)
+            {
+                var index = i;
+                <div class="input-group mb-2">
+                    <input class="form-control" placeholder="@($"Option {index + 1}")" @bind="options[index]" />
+                    @if (options.Count > 2)
+                    {
+                        <button type="button" class="btn btn-outline-danger" @onclick="() => RemoveOption(index)">✕</button>
+                    }
+                </div>
+            }
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-1" @onclick="AddOption">
+                + Add Option
+            </button>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Expiration Date (Optional)</label>
+            <input type="datetime-local" class="form-control" @bind="expiresAt" />
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Author Username</label>
+            <input class="form-control" placeholder="e.g. Hertz" @bind="authorName" />
+        </div>
+
+        <button type="button" class="btn btn-primary w-100 fw-bold py-2" @onclick="PublishPoll">
+            Publish Poll
+        </button>
+    </div>
+</div>
+
+@code {
+    private string question = string.Empty;
+    private List<string> options = new() { "", "" };
+    private DateTime? expiresAt;
+    private string authorName = "Hertz";
+
+    private void AddOption() => options.Add("");
+
+    private void RemoveOption(int index)
+    {
+        if (options.Count > 2) options.RemoveAt(index);
+    }
+
+    private void PublishPoll()
+    {
+        if (string.IsNullOrWhiteSpace(question) || options.Count(o => !string.IsNullOrWhiteSpace(o)) < 2)
+        {
+            return;
+        }
+
+        PollService.CreatePoll(question, options, expiresAt, authorName);
+        Navigation.NavigateTo("/");
+    }
+}
