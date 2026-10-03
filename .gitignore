@@ -1,0 +1,29 @@
+[Bb]in/
+[Oo]bj/
+_build/
+_site/
+
+# Visual Studio / Rider
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+
+*.db
+*.db-shm
+*.db-wal
+.env
+appsettings.Development.json
+
+# NuGet Packages
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# Frontend Dependencies
+node_modules/
